@@ -19,3 +19,41 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Cores padronizadas */
+@layer base {
+  .bg-primary-aro {
+    background-color: #000000; /* Fundo principal */
+  }
+  .bg-header-footer-aro {
+    background-color: #000000; /* Cabeçalho e rodapé */
+  }
+  .text-header-footer-aro {
+    color: #FFD700; /* Detalhes em dourado */
+  }
+  .bg-button-aro {
+    background-color: #B8860B; /* Botões */
+  }
+  .text-button-aro {
+    color: #FFFFFF; /* Texto dos botões */
+  }
+  .text-main-aro {
+    color: #9CA3AF; /* Textos principais */
+  }
+  .text-highlight-aro {
+    color: #FFD700; /* Textos de destaque */
+  }
+}
+
+/* Estilos globais */
+body {
+  @apply bg-primary-aro text-main-aro;
+}
+
+button {
+  @apply bg-button-aro text-button-aro;
+}
+
+.highlight {
+  @apply text-highlight-aro;
+}
