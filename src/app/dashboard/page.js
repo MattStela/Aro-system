@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signOutUser, db } from "../../../firebase";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
-export default function Dashboard() {
+function DashboardContent() {
   const searchParams = useSearchParams();
   const uid = searchParams.get("uid");
   const displayName = searchParams.get("displayName");
@@ -158,5 +158,13 @@ export default function Dashboard() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
