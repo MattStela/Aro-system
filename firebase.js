@@ -37,10 +37,24 @@ const signInWithGoogle = async () => {
 const handleRedirectResult = async () => {
   try {
     const result = await getRedirectResult(auth);
-    console.log("Redirect result:", result);
-    return result ? result.user : null;
+    if (result) {
+      // This gives you a Google Access Token. You can use it to access Google APIs.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+
+      // The signed-in user info.
+      const user = result.user;
+      console.log("Redirect result user:", user);
+      return user;
+    }
+    return null;
   } catch (error) {
-    console.error("Error getting redirect result:", error);
+    // Handle Errors here.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    const email = error.customData.email;
+    const credential = GoogleAuthProvider.credentialFromError(error);
+    console.error("Error getting redirect result:", errorCode, errorMessage, email, credential);
     return null;
   }
 };
