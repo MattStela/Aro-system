@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, getRedirectResult, signOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -19,18 +19,12 @@ const provider = new GoogleAuthProvider();
 
 const signInWithGoogle = async () => {
   try {
-    console.log("Opening Google sign-in popup...");
+    console.log("Redirecting to Google sign-in...");
     provider.setCustomParameters({ prompt: 'select_account' });
-    const result = await signInWithPopup(auth, provider);
-    console.log("Google sign-in successful:", result);
-    return result.user;
+    await signInWithRedirect(auth, provider);
   } catch (error) {
-    if (error.code === 'auth/popup-closed-by-user') {
-      console.warn("Popup closed by user");
-    } else {
-      console.error("Error signing in with Google:", error);
-      throw error;
-    }
+    console.error("Error signing in with Google:", error);
+    throw error; // Re-throw the error to be handled by the caller
   }
 };
 

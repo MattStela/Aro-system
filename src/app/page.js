@@ -48,14 +48,10 @@ export default function Home() {
   const handleGoogleSignIn = async () => {
     console.log("handleGoogleSignIn called");
     try {
-      const user = await signInWithGoogle();
-      if (user) {
-        console.log("signInWithGoogle success", user);
-        router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
-      }
+      await signInWithGoogle();
     } catch (err) {
       console.error("Erro ao fazer login com o Google:", err);
-      setLoginError("O popup de autenticação foi fechado. Por favor, tente novamente e permita popups para este site.");
+      setLoginError("Erro ao fazer login com o Google. Por favor, tente novamente.");
     }
   };
 
