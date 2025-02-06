@@ -3,12 +3,13 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, getRedirectResult, signOu
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBBgFQmitziMBmLCkh_PJ2dn9YuwsjfYA0",
+  authDomain: "aro-system2.firebaseapp.com",
+  projectId: "aro-system2",
+  storageBucket: "aro-system2.firebasestorage.app",
+  messagingSenderId: "808130384321",
+  appId: "1:808130384321:web:8bb146a953fd8899571f40",
+  measurementId: "G-8NJYHH2T2Y"
 };
 
 const app = initializeApp(firebaseConfig);

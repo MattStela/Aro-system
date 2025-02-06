@@ -55,7 +55,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Erro ao fazer login com o Google:", err);
-      setLoginError("Popup closed by user. Please try again and do not close the popup.");
+      setLoginError("O popup de autenticação foi fechado. Por favor, tente novamente e permita popups para este site.");
     }
   };
 
@@ -79,7 +79,7 @@ export default function Home() {
 
             <button
               onClick={handleGoogleSignIn}
-              className="h-[50px] hover:text-white text-black bg-white hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 w-full"
+              className="h-[50px] hover:text-white text-black bg-white hover:bg-blue-600 font-semibold py-2 px-4 rounded-full flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 w-full"
             >
               <img
                 src="/google.png"

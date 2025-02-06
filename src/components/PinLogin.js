@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "../../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -8,29 +8,11 @@ export default function PinLogin() {
   const [pin, setPin] = useState(new Array(6).fill(""));
   const [error, setError] = useState("");
   const [attempts, setAttempts] = useState(0);
-  const [isLocked, setIsLocked] = useState(false);
-  const [lockTime, setLockTime] = useState(null);
   const router = useRouter();
   const inputRefs = useRef([]);
 
-  useEffect(() => {
-    if (isLocked) {
-      const timer = setTimeout(() => {
-        setIsLocked(false);
-        setAttempts(0);
-      }, 300000); // 5 minutos
-
-      return () => clearTimeout(timer);
-    }
-  }, [isLocked]);
-
   const handlePinLogin = async (e) => {
     e.preventDefault();
-
-    if (isLocked) {
-      setError("Muitas tentativas. Por favor, aguarde 5 minutos.");
-      return;
-    }
 
     try {
       // Juntar os valores de PIN
@@ -44,13 +26,7 @@ export default function PinLogin() {
 
       if (querySnapshot.empty) {
         setAttempts(attempts + 1);
-        if (attempts + 1 >= 3) {
-          setIsLocked(true);
-          setLockTime(Date.now());
-          setError("Muitas tentativas. Por favor, aguarde 5 minutos.");
-        } else {
-          setError("PIN incorreto. Tente novamente.");
-        }
+        setError("PIN incorreto. Tente novamente.");
       } else {
         const userDoc = querySnapshot.docs[0];
         const data = userDoc.data();
