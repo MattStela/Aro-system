@@ -23,7 +23,7 @@ module.exports = {
           },
           {
             key: "Cross-Origin-Resource-Policy",
-            value: "same-origin",
+            value: "cross-origin",
           },
           {
             key: "Access-Control-Allow-Origin",

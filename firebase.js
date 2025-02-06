@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -30,7 +30,9 @@ const signInWithGoogle = async () => {
 
 const handleRedirectResult = async () => {
   try {
+    console.log("Checking for redirect result...");
     const result = await getRedirectResult(auth);
+    console.log("Redirect result:", result);
     if (result) {
       // This gives you a Google Access Token. You can use it to access Google APIs.
       const credential = GoogleAuthProvider.credentialFromResult(result);
@@ -39,8 +41,10 @@ const handleRedirectResult = async () => {
       // The signed-in user info.
       const user = result.user;
       console.log("Redirect result user:", user);
+      console.log("User authenticated successfully.");
       return user;
     }
+    console.log("No redirect result found.");
     return null;
   } catch (error) {
     // Handle Errors here.
@@ -53,8 +57,20 @@ const handleRedirectResult = async () => {
   }
 };
 
+const checkAuthStatus = (callback) => {
+  onAuthStateChanged(auth, async (user) => {
+    console.log("Auth state changed:", user);
+    if (user) {
+      const redirectUser = await handleRedirectResult();
+      callback(redirectUser || user);
+    } else {
+      callback(null);
+    }
+  });
+};
+
 const signOutUser = () => {
   return signOut(auth);
 };
 
-export { auth, db, signInWithGoogle, handleRedirectResult, signOutUser };
+export { auth, db, signInWithGoogle, handleRedirectResult, checkAuthStatus, signOutUser };
