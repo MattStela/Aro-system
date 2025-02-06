@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import {
   getAuth,
-  signInWithPhoneNumber,
   RecaptchaVerifier,
 } from "firebase/auth";
 import { useRouter } from "next/navigation";
