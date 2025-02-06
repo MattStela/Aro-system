@@ -18,6 +18,10 @@ function DashboardContent() {
 
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!uid) {
+        setIsLoading(false);
+        return;
+      }
       const userRef = doc(db, "users", uid);
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
