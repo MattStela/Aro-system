@@ -3,11 +3,7 @@ import { useState, useEffect } from "react";
 import { signOutUser, db } from "../../../firebase";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import {
-  doc,
-  setDoc,
-  getDoc,
-} from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
