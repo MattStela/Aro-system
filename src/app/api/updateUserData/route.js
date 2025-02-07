@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "../../../firebase";
+import { db } from '../../../../firebase';
 
 export async function POST(request) {
   const secretKey = process.env.JWT_SECRET_KEY;
