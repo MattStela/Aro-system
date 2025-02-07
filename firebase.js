@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Configurações do Firebase
@@ -22,65 +22,23 @@ const provider = new GoogleAuthProvider();
 // Função para login com Google
 const signInWithGoogle = async () => {
   try {
-    console.log("Redirecionando para o login do Google...");
-    provider.setCustomParameters({ prompt: 'select_account' });
-    await signInWithRedirect(auth, provider);
+    console.log("Iniciando login com Google...");
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    console.log("Usuário autenticado:", user);
+    return user;
   } catch (error) {
     console.error("Erro ao fazer login com o Google:", error);
     throw error; // Repassa o erro para ser tratado pelo chamador
   }
 };
 
-// Função para lidar com o resultado do redirecionamento
-const handleRedirectResult = async () => {
-  try {
-    console.log("Verificando resultado do redirecionamento...");
-    const result = await getRedirectResult(auth);
-    console.log("Redirect result:", result);
-    if (result) {
-      // Obtém o token de acesso do Google
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential.accessToken;
-
-      // Informações do usuário autenticado
-      const user = result.user;
-      console.log("Usuário do resultado do redirecionamento:", user);
-      console.log("Usuário autenticado com sucesso.");
-      return user;
-    }
-    console.log("Nenhum resultado de redirecionamento encontrado.");
-    return null;
-  } catch (error) {
-    // Lida com erros aqui
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    const email = error.customData?.email;
-    const credential = GoogleAuthProvider.credentialFromError(error);
-    console.error("Erro ao obter resultado do redirecionamento:", errorCode, errorMessage, email, credential);
-    return null;
-  }
-};
-
 // Função para verificar o estado de autenticação
 const checkAuthStatus = (callback) => {
-  // Verificar o usuário atual diretamente
-  const currentUser = auth.currentUser;
-  console.log("Usuário atual:", currentUser);
-
-  if (currentUser) {
-    callback(currentUser);
-  } else {
-    // Adicionar observador para mudanças de estado de autenticação
-    onAuthStateChanged(auth, async (user) => {
-      console.log("Estado de autenticação alterado:", user);
-      if (user) {
-        const redirectUser = await handleRedirectResult();
-        callback(redirectUser || user);
-      } else {
-        callback(null);
-      }
-    });
-  }
+  onAuthStateChanged(auth, (user) => {
+    console.log("Estado de autenticação alterado:", user);
+    callback(user);
+  });
 };
 
 // Função para logout
@@ -88,5 +46,5 @@ const signOutUser = () => {
   return signOut(auth);
 };
 
-export { auth, db, signInWithGoogle, handleRedirectResult, checkAuthStatus, signOutUser };
+export { auth, db, signInWithGoogle, checkAuthStatus, signOutUser };
 auth.useDeviceLanguage();
