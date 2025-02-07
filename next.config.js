@@ -14,30 +14,39 @@ module.exports = {
         source: "/(.*)",
         headers: [
           {
+            // Policy to ensure same-origin and cross-origin isolation for added security
             key: "Cross-Origin-Opener-Policy",
-            value: "same-origin",
-          },
-          {
+            value: "same-origin", // Options: "same-origin", "same-origin-allow-popups", "unsafe-none"
+
+            // Policy to enforce same-origin embedding and require credentials for cross-origin resources
             key: "Cross-Origin-Embedder-Policy",
-            value: "require-corp",
-          },
-          {
+            value: "require-corp", // Options: "unsafe-none", "require-corp"
+
+            // Policy to define how resources can be shared across different origins
             key: "Cross-Origin-Resource-Policy",
-            value: "cross-origin",
-          },
-          {
+            value: "cross-origin", // Options: "same-origin", "same-site", "cross-origin"
+
+            // Allows all origins to access the resources (CORS)
             key: "Access-Control-Allow-Origin",
-            value: "*",
-          },
-          {
+            value: "*", // Options: "*", "specific-origin" (e.g., "https://example.com")
+
+            // Specifies the HTTP methods that are allowed when accessing the resource in a cross-origin request
             key: "Access-Control-Allow-Methods",
-            value: "GET, POST, PUT, DELETE, OPTIONS",
-          },
-          {
+            value: "GET, POST, PUT, DELETE, OPTIONS", // Options: Combinations of "GET", "POST", "PUT", "DELETE", "OPTIONS", etc.
+
+            // Defines which headers can be used in the actual request
             key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization",
-          },
+            value: "Content-Type, Authorization" // Options: Any specific headers required (e.g., "Content-Type, Authorization, X-Custom-Header")
+          }
         ],
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: `https://${process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}/__/auth/:path*`,
       },
     ];
   },

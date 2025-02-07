@@ -1,6 +1,6 @@
 "use client";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, signInWithGoogle, handleRedirectResult, checkAuthStatus } from "../../firebase";
+import { auth, signInWithGoogle, handleRedirectResult } from "../../firebase";
 import { useRouter } from "next/navigation";
 import PinLogin from "../components/PinLogin";
 import { useEffect, useState } from "react";
@@ -14,37 +14,46 @@ export default function Home() {
   const [isCheckingRedirect, setIsCheckingRedirect] = useState(true);
 
   useEffect(() => {
-    checkAuthStatus((user) => {
-      if (user) {
-        console.log("User already logged in:", user);
-        router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
-      } else {
-        console.log("No user found.");
+    const checkRedirectResult = async () => {
+      console.log("Checking redirect result...");
+      try {
+        const user = await handleRedirectResult();
+        console.log("Redirect result user:", user);
+        if (user) {
+          const userRef = doc(db, "users", user.uid);
+          await setDoc(
+            userRef,
+            {
+              displayName: user.displayName,
+              GoogleUID: user.uid,
+            },
+            { merge: true }
+          );
+          console.log("User document set in Firestore");
+          router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
+        } else {
+          console.log("No redirect result user found.");
+        }
+      } catch (err) {
+        console.error("Error during redirect result handling:", err);
+      } finally {
         setIsCheckingRedirect(false);
       }
-    });
-  }, [router]);
+    };
+
+    if (user) {
+      console.log("User already logged in:", user);
+      router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
+    } else {
+      console.log("No user found, checking redirect result");
+      checkRedirectResult();
+    }
+  }, [user, router]);
 
   const handleGoogleSignIn = async () => {
     console.log("handleGoogleSignIn called");
     try {
       await signInWithGoogle();
-      const user = await handleRedirectResult();
-      if (user) {
-        const userRef = doc(db, "users", user.uid);
-        await setDoc(
-          userRef,
-          {
-            displayName: user.displayName,
-            GoogleUID: user.uid,
-          },
-          { merge: true }
-        );
-        console.log("User document set in Firestore");
-        router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
-      } else {
-        console.log("No redirect result user found.");
-      }
     } catch (err) {
       console.error("Erro ao fazer login com o Google:", err);
       setLoginError("Erro ao fazer login com o Google. Por favor, tente novamente.");
