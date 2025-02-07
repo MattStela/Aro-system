@@ -4,19 +4,22 @@ import { useState, useEffect, Suspense } from "react";
 import { signOutUser, db } from "../../../firebase";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
+import HeaderUser from "./HeaderUser";
+import BodyUser from "./BodyUser";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
   const uid = searchParams.get("uid");
-  const displayName = searchParams.get("displayName");
   const router = useRouter();
   const [userData, setUserData] = useState(null);
   const [areaCode, setAreaCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pin, setPin] = useState(new Array(6).fill(""));
+  const [displayName, setDisplayName] = useState(searchParams.get("displayName")); // Initialize with the displayName from search params
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
+  const [users, setUsers] = useState([]); // Estado para armazenar a lista de usuários
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -29,6 +32,7 @@ function DashboardContent() {
       if (userDoc.exists()) {
         const data = userDoc.data();
         setUserData(data);
+        setDisplayName(data.displayName || displayName); // Update the displayName if it exists in user data
       }
       setIsLoading(false);
     };
@@ -43,8 +47,19 @@ function DashboardContent() {
       }
     };
 
+    const fetchUsers = async () => {
+      const usersCollection = collection(db, "users");
+      const usersSnapshot = await getDocs(usersCollection);
+      const usersList = usersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setUsers(usersList);
+    };
+
     fetchUserData();
     fetchToken();
+    fetchUsers(); // Buscar a lista de usuários
   }, [uid]);
 
   const handleSignOut = async () => {
@@ -63,6 +78,7 @@ function DashboardContent() {
     const dataToUpdate = {
       phone: `+55${areaCode}${phoneNumber}`,
       pin: pin.join(""),
+      displayName: displayName, // Save the new displayName
     };
 
     try {
@@ -86,6 +102,7 @@ function DashboardContent() {
         if (userDoc.exists()) {
           const data = userDoc.data();
           setUserData(data);
+          setDisplayName(data.displayName); // Update the displayName in the state
         }
 
         alert("Informações registradas com sucesso!");
@@ -106,83 +123,38 @@ function DashboardContent() {
   }
 
   return (
-    <div className="border p-4 text-sm sm:text-base w-full flex flex-col items-center justify-center min-h-screen bg-gray-800 text-white relative">
-      {/*Cabeçalho do usuário ==================================================================*/}
-      <div className="border-4 min-h-screen border-gray-500 flex justify-center flex-col items-center py-4 px-6">
-        <div className="p-3 flex flex-row items-center justify-center space-x-4">
-          <p className="text-xl sm:text-3xl font-bold mb-1">
-            Bem-vindo, {displayName}!
-          </p>
-          <button className="border-2 border-red-500 h-8 w-12 rounded-full bg-red-500 hover:bg-red-700" onClick={handleSignOut}>
-            sair
-          </button>
-        </div>
-
-        {token && (
-          <p className="text-[0.8rem] sm:text-sm text-gray-400 break-all">
-            Token JWT: {token}
-          </p>
-        )}
-
-        {userData && userData.phone ? (
-          <div>
-            <div className="flex flex-col justify-center items-center text-[0.8rem] sm:text-sm text-gray-400">
-              <p>Telefone: {userData.phone}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="p-4 space-x-4 rounded-3xl flex flex-col space-y-4 items-center">
-            <p className="text-gray-400">Adicione um número de telefone:</p>
-            <div className="space-x-4 flex flex-row items-center">
-              <div className="flex flex-row space-x-4">
-                <div className="flex flex-col justify-center items-start">
-                  <input
-                    maxLength={2}
-                    type="text"
-                    value={areaCode}
-                    onChange={(e) => setAreaCode(e.target.value)}
-                    className="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                    placeholder="DDD"
-                    name="DDD"
-                  />
-                </div>
-              </div>
-              <div className="flex space-y-1 flex-col justify-center items-start">
-                <input
-                  name="phone"
-                  maxLength={9}
-                  type="text"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                  placeholder="Número de Telefone"
-                />
-              </div>
-            </div>
-
-            <p className="text-gray-400">Adicione um PIN à sua conta:</p>
-            <div className="flex space-x-2">
-              {pin.map((digit, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  maxLength="1"
-                  value={digit}
-                  onChange={(e) => handlePinChange(e.target.value, index)}
-                  className="shadow appearance-none border rounded h-[42px] w-10 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 text-center"
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={handleRegisterInfo}
-              className="p-2 rounded-full px-3 bg-gray-600 text-gray-300 hover:text-white hover:bg-gray-500 text-sm"
-            >
-              Confirmar
-            </button>
-          </div>
-        )}
-      </div>
+    <div className="border p-4 text-sm sm:text-base w-full flex flex-col space-y-4 items-center justify-center min-h-screen bg-gray-800 text-white relative">
+      {/* Cabeçalho do usuário ================================================================== */}
+      <HeaderUser
+        displayName={displayName}
+        token={token}
+        handleSignOut={handleSignOut}
+        userData={userData}
+        handleRegisterInfo={handleRegisterInfo}
+        areaCode={areaCode}
+        setAreaCode={setAreaCode}
+        phoneNumber={phoneNumber}
+        setPhoneNumber={setPhoneNumber}
+        pin={pin}
+        handlePinChange={handlePinChange}
+        setDisplayName={setDisplayName}
+      />
+      
+      <BodyUser
+        displayName={displayName}
+        setDisplayName={setDisplayName}
+        token={token}
+        handleSignOut={handleSignOut}
+        userData={userData}
+        handleRegisterInfo={handleRegisterInfo}
+        areaCode={areaCode}
+        setAreaCode={setAreaCode}
+        phoneNumber={phoneNumber}
+        setPhoneNumber={setPhoneNumber}
+        pin={pin}
+        handlePinChange={handlePinChange}
+        users={users}
+      />
     </div>
   );
 }
