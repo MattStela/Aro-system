@@ -42,7 +42,31 @@ export default function Home() {
         { merge: true }
       );
       console.log("User document set in Firestore");
-      router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
+
+      // Chamar o endpoint para gerar o token JWT
+      const response = await fetch('/api/generateToken', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ uid: user.uid, displayName: user.displayName }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const token = data.token;
+        console.log("Generated JWT Token:", token);
+
+        // Armazenar o token no localStorage ou cookies
+        localStorage.setItem('jwtToken', token);
+
+        router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
+      } else {
+        setLoginError(
+          "Erro ao gerar o token JWT. Por favor, tente novamente."
+        );
+      }
     } catch (err) {
       console.error("Erro ao fazer login com o Google:", err);
       setLoginError(
@@ -62,12 +86,11 @@ export default function Home() {
           <p className="text-center text-gray-500">Carregando...</p>
         ) : (
           <div className="space-y-4 flex flex-col justify-center items-center text-center">
-            teste<Image className="mb-4" src="/logo.png" width={100} height={100} alt="logo" />
+            <Image className="mb-4" src="/logo.png" width={100} height={100} alt="logo" />
             <div className="p-4 rounded-3xl bg-gradient-to-r from-black to-gray-700">
               <PinLogin /> {/* Incluindo o componente PinLogin */}
             </div>
             
-
             <div className="flex flex-row justify-center items-center">
               <div className="w-[42%] h-[0.1rem] rounded-full bg-gray-600"></div>
               <p className="text-center flex-grow">ou</p>

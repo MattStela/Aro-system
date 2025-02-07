@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import jwt from 'jsonwebtoken';
 
 // Configurações do Firebase
 const firebaseConfig = {
@@ -18,6 +19,25 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
+const secretKey = process.env.JWT_SECRET_KEY; // Carregando a chave secreta do JWT
+
+// Função para gerar um token JWT
+const generateToken = (user) => {
+  const payload = { uid: user.uid, displayName: user.displayName };
+  console.log('Payload:', payload);
+  console.log('SecretKey:', secretKey);
+
+  if (!secretKey) {
+    throw new Error("JWT_SECRET_KEY não está definido");
+  }
+
+  try {
+    return jwt.sign(payload, secretKey, { expiresIn: '1h' });
+  } catch (error) {
+    console.error('Erro ao gerar o token JWT:', error);
+    throw error;
+  }
+};
 
 // Função para login com Google
 const signInWithGoogle = async () => {
@@ -46,5 +66,5 @@ const signOutUser = () => {
   return signOut(auth);
 };
 
-export { auth, db, signInWithGoogle, checkAuthStatus, signOutUser };
+export { auth, db, signInWithGoogle, checkAuthStatus, signOutUser, generateToken }; // Exportando a função generateToken
 auth.useDeviceLanguage();

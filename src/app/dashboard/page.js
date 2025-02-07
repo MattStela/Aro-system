@@ -1,9 +1,10 @@
 "use client";
+
 import { useState, useEffect, Suspense } from "react";
 import { signOutUser, db } from "../../../firebase";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -15,6 +16,7 @@ function DashboardContent() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pin, setPin] = useState(new Array(6).fill(""));
   const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState(null); // Estado para o token
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -31,7 +33,13 @@ function DashboardContent() {
       setIsLoading(false);
     };
 
+    const fetchToken = () => {
+      const jwtToken = localStorage.getItem("jwtToken");
+      setToken(jwtToken);
+    };
+
     fetchUserData();
+    fetchToken();
   }, [uid]);
 
   const handleSignOut = async () => {
@@ -52,16 +60,27 @@ function DashboardContent() {
 
   const handleRegisterInfo = async () => {
     const userRef = doc(db, "users", uid);
+    const dataToUpdate = {
+      phone: `+55${areaCode}${phoneNumber}`,
+      pin: pin.join(""),
+    };
+
     try {
-      await setDoc(userRef, {
-        phone: `+55${areaCode}${phoneNumber}`,
-        pin: pin.join(""),
-      }, { merge: true });
+      await fetch('/api/updateUserData', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ uid, data: dataToUpdate }),
+      });
+
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
         const data = userDoc.data();
         setUserData(data);
       }
+
       alert("Informações registradas com sucesso!");
     } catch (error) {
       console.error("Erro ao registrar as informações: ", error);
@@ -97,8 +116,8 @@ function DashboardContent() {
             <div className="flex flex-col justify-center items-center text-[0.8rem] sm:text-sm text-gray-400">
               <p>PIN: {userData.pin}</p>
               <p>Telefone: {userData.phone}</p>
+              {token && <p className="break-all">Token JWT: {token}</p>}
             </div>
-            {/* Adicione mais informações que você deseja mostrar */}
           </div>
         ) : (
           <div className="p-4 space-x-4 rounded-3xl flex flex-col space-y-4 items-center">
