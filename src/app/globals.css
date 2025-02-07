@@ -50,10 +50,6 @@ body {
   @apply bg-primary-aro text-main-aro;
 }
 
-button {
-  @apply bg-button-aro text-button-aro;
-}
-
 .highlight {
   @apply text-highlight-aro;
 }

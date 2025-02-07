@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 import HeaderUser from "./HeaderUser";
-import BodyUser from "./BodyUser";
+import BdRegister from "./BdRegister";
+import Posts from "./Posts";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -20,6 +21,7 @@ function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
   const [users, setUsers] = useState([]); // Estado para armazenar a lista de usuários
+  const [posts, setPosts] = useState([]); // Estado para armazenar a lista de posts
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -57,9 +59,20 @@ function DashboardContent() {
       setUsers(usersList);
     };
 
+    const fetchPosts = async () => {
+      const postsCollection = collection(db, "posts");
+      const postsSnapshot = await getDocs(postsCollection);
+      const postsList = postsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPosts(postsList);
+    };
+
     fetchUserData();
     fetchToken();
     fetchUsers(); // Buscar a lista de usuários
+    fetchPosts(); // Buscar a lista de posts
   }, [uid]);
 
   const handleSignOut = async () => {
@@ -78,7 +91,8 @@ function DashboardContent() {
     const dataToUpdate = {
       phone: `+55${areaCode}${phoneNumber}`,
       pin: pin.join(""),
-      displayName: displayName, // Save the new displayName
+      displayName: displayName, // Salva o novo displayName
+      role: userData?.role || "user", // Define a role como "user" se não estiver definida
     };
 
     try {
@@ -123,7 +137,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="border p-4 text-sm sm:text-base w-full flex flex-col space-y-4 items-center justify-center min-h-screen bg-gray-800 text-white relative">
+    <div className="p-4 text-sm sm:text-base w-full flex flex-col space-y-4 items-center justify-center min-h-screen bg-gray-800 text-white relative">
       {/* Cabeçalho do usuário ================================================================== */}
       <HeaderUser
         displayName={displayName}
@@ -140,9 +154,13 @@ function DashboardContent() {
         setDisplayName={setDisplayName}
       />
       
-      <BodyUser
+      <BdRegister
+        userData={userData}
+        users={users}
+      />
+
+      <Posts  
         displayName={displayName}
-        setDisplayName={setDisplayName}
         token={token}
         handleSignOut={handleSignOut}
         userData={userData}
@@ -153,7 +171,8 @@ function DashboardContent() {
         setPhoneNumber={setPhoneNumber}
         pin={pin}
         handlePinChange={handlePinChange}
-        users={users}
+        setDisplayName={setDisplayName}
+        posts={posts} // Passando a coleção "posts"
       />
     </div>
   );
