@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { db } from "../../../firebase"; // Certifique-se de que o caminho para seu arquivo firebase.js esteja correto
-import { collection, addDoc, doc, updateDoc, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+  Timestamp,
+} from "firebase/firestore";
 import { FaChevronDown, FaChevronRight, FaEdit } from "react-icons/fa";
 
 export default function Posts({
@@ -86,7 +92,9 @@ export default function Posts({
 
   const renderPostDetails = (post) => {
     const isExpanded = expandedPostIds.includes(post.id);
-    const canEdit = userData.role === "admaster" || (userData.role === "adm" && post.createdBy === displayName);
+    const canEdit =
+      userData.role === "admaster" ||
+      (userData.role === "adm" && post.createdBy === displayName);
 
     return (
       <div className="p-2" key={post.id}>
@@ -123,15 +131,15 @@ export default function Posts({
             </form>
           </div>
         ) : (
-          <>
+          <div className="w-[350px]">
             <div className="flex space-x-4 justify-between items-center">
+              {canEdit && (
+                <button onClick={() => handleEditPost(post)}>
+                  <FaEdit className="text-blue-500 mx-2" />
+                </button>
+              )}
               <h3 className="text-xl font-bold">{post.title}</h3>
               <div className="flex items-center">
-                {canEdit && (
-                  <button onClick={() => handleEditPost(post)}>
-                    <FaEdit className="text-blue-500 mx-2" />
-                  </button>
-                )}
                 <button onClick={() => togglePostDetails(post.id)}>
                   {isExpanded ? (
                     <FaChevronDown className="bg-gray-800" />
@@ -144,26 +152,33 @@ export default function Posts({
             {isExpanded && (
               <div>
                 <p>{post.content}</p>
-                <p className="text-sm text-gray-500">Criado por: {post.createdBy}</p>
+                <p className="text-sm text-gray-500">
+                  Criado por: {post.createdBy}
+                </p>
                 {post.createdAt && (
                   <p className="text-sm text-gray-500">
-                    Em: {new Date(post.createdAt.seconds * 1000).toLocaleString()}
+                    Em:{" "}
+                    {new Date(post.createdAt.seconds * 1000).toLocaleString()}
                   </p>
                 )}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     );
   };
 
   return (
-    <div className="border w-full min-h-screen flex flex-col items-center justify-center">
+    <div className="border w-full p-4 flex flex-col items-center justify-center">
+        <h2 className="text-lg font-bold mb-4">Adicionar Novo Post</h2>
       {(userData.role === "admaster" || userData.role === "adm") && (
         <>
-          <form onSubmit={handleSubmit} className="w-[400px] border space-y-4 p-4 mb-8">
-            <h2 className="text-lg font-bold mb-4">Adicionar Novo Post</h2>
+          <form
+            onSubmit={handleSubmit}
+            className="w-[400px] border space-y-4 p-4 mb-8"
+          >
+            
             <div>
               <input
                 type="text"
