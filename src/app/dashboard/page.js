@@ -37,9 +37,9 @@ function DashboardContent() {
       const jwtToken = localStorage.getItem("jwtToken");
       setToken(jwtToken);
       if (jwtToken) {
-        console.log('Usuário autenticado: sim');
+        console.log("Usuário autenticado: sim");
       } else {
-        console.log('Usuário autenticado: não');
+        console.log("Usuário autenticado: não");
       }
     };
 
@@ -48,11 +48,6 @@ function DashboardContent() {
   }, [uid]);
 
   const handleSignOut = async () => {
-    await signOutUser();
-    router.push("/");
-  };
-
-  const handleGoHome = async () => {
     await signOutUser();
     router.push("/");
   };
@@ -71,9 +66,9 @@ function DashboardContent() {
     };
 
     try {
-      console.log('Iniciando a requisição para updateUserData');
-      console.log('Dados a serem enviados:', { uid, data: dataToUpdate });
-      
+      console.log("Iniciando a requisição para updateUserData");
+      console.log("Dados a serem enviados:", { uid, data: dataToUpdate });
+
       const response = await fetch("/api/updateUserData", {
         method: "POST",
         headers: {
@@ -84,7 +79,7 @@ function DashboardContent() {
       });
 
       const result = await response.json();
-      console.log('Resposta do servidor:', result);
+      console.log("Resposta do servidor:", result);
 
       if (response.ok) {
         const userDoc = await getDoc(userRef);
@@ -95,7 +90,7 @@ function DashboardContent() {
 
         alert("Informações registradas com sucesso!");
       } else {
-        console.error('Erro ao registrar as informações:', result.message);
+        console.error("Erro ao registrar as informações:", result.message);
         alert(`Erro ao registrar as informações: ${result.message}`);
       }
     } catch (error) {
@@ -111,28 +106,24 @@ function DashboardContent() {
   }
 
   return (
-    <div className="text-sm sm:text-base w-full flex flex-col items-center justify-center min-h-screen bg-gray-800 text-white relative">
-      <button
-        onClick={handleSignOut}
-        className="absolute top-4 right-4 bg-red-800 hover:bg-red-600 text-gray-200 hover:text-white font-semibold py-2 px-4 rounded-full focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
-      >
-        Sair
-      </button>
-      <button
-        onClick={handleGoHome}
-        className="absolute top-4 left-4 bg-blue-800 hover:bg-blue-600 text-gray-200 hover:text-white font-semibold py-2 px-4 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-      >
-        Página Inicial
-      </button>
-      <div className="border border-4 border-gray-500 flex justify-center flex-col items-center py-4 px-6 w-5/6 rounded-full">
-        <p className="text-xl sm:text-3xl font-bold mb-1">
-          Bem-vindo, {displayName}!
-        </p>
+    <div className="border p-4 text-sm sm:text-base w-full flex flex-col items-center justify-center min-h-screen bg-gray-800 text-white relative">
+      {/*Cabeçalho do usuário ==================================================================*/}
+      <div className="border-4 min-h-screen border-gray-500 flex justify-center flex-col items-center py-4 px-6">
+        <div className="p-3 flex flex-row items-center justify-center space-x-4">
+          <p className="text-xl sm:text-3xl font-bold mb-1">
+            Bem-vindo, {displayName}!
+          </p>
+          <button className="border-2 border-red-500 h-8 w-12 rounded-full bg-red-500 hover:bg-red-700" onClick={handleSignOut}>
+            sair
+          </button>
+        </div>
+
         {token && (
           <p className="text-[0.8rem] sm:text-sm text-gray-400 break-all">
             Token JWT: {token}
           </p>
         )}
+
         {userData && userData.phone ? (
           <div>
             <div className="flex flex-col justify-center items-center text-[0.8rem] sm:text-sm text-gray-400">
