@@ -16,7 +16,7 @@ function DashboardContent() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pin, setPin] = useState(new Array(6).fill(""));
   const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState(null); // Estado para o token
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -36,6 +36,11 @@ function DashboardContent() {
     const fetchToken = () => {
       const jwtToken = localStorage.getItem("jwtToken");
       setToken(jwtToken);
+      if (jwtToken) {
+        console.log('Usuário autenticado: sim');
+      } else {
+        console.log('Usuário autenticado: não');
+      }
     };
 
     fetchUserData();
@@ -66,25 +71,38 @@ function DashboardContent() {
     };
 
     try {
-      await fetch('/api/updateUserData', {
-        method: 'POST',
+      console.log('Iniciando a requisição para updateUserData');
+      console.log('Dados a serem enviados:', { uid, data: dataToUpdate });
+      
+      const response = await fetch("/api/updateUserData", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ uid, data: dataToUpdate }),
       });
 
-      const userDoc = await getDoc(userRef);
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        setUserData(data);
-      }
+      const result = await response.json();
+      console.log('Resposta do servidor:', result);
 
-      alert("Informações registradas com sucesso!");
+      if (response.ok) {
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setUserData(data);
+        }
+
+        alert("Informações registradas com sucesso!");
+      } else {
+        console.error('Erro ao registrar as informações:', result.message);
+        alert(`Erro ao registrar as informações: ${result.message}`);
+      }
     } catch (error) {
       console.error("Erro ao registrar as informações: ", error);
-      alert("Erro ao registrar as informações. Verifique suas permissões no Firestore.");
+      alert(
+        "Erro ao registrar as informações. Verifique suas permissões no Firestore."
+      );
     }
   };
 
@@ -110,66 +128,60 @@ function DashboardContent() {
         <p className="text-xl sm:text-3xl font-bold mb-1">
           Bem-vindo, {displayName}!
         </p>
-        <p className="text-[0.8rem] sm:text-sm text-gray-400">UID: {uid}</p>
-        {userData && userData.pin && userData.phone ? (
+        {token && (
+          <p className="text-[0.8rem] sm:text-sm text-gray-400 break-all">
+            Token JWT: {token}
+          </p>
+        )}
+        {userData && userData.phone ? (
           <div>
             <div className="flex flex-col justify-center items-center text-[0.8rem] sm:text-sm text-gray-400">
-              <p>PIN: {userData.pin}</p>
               <p>Telefone: {userData.phone}</p>
-              {token && <p className="break-all">Token JWT: {token}</p>}
             </div>
           </div>
         ) : (
           <div className="p-4 space-x-4 rounded-3xl flex flex-col space-y-4 items-center">
-            {!userData || !userData.phone ? (
-              <>
-                <p className="text-gray-400">Adicione um número de telefone:</p>
-                <div className="space-x-4 flex flex-row items-center">
-                  <div className="flex flex-row space-x-4">
-                    <div className="flex flex-col justify-center items-start">
-                      <input
-                        maxLength={2}
-                        type="text"
-                        value={areaCode}
-                        onChange={(e) => setAreaCode(e.target.value)}
-                        className="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                        placeholder="DDD"
-                        name="DDD"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex space-y-1 flex-col justify-center items-start">
-                    <input
-                      name="phone"
-                      maxLength={9}
-                      type="text"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                      placeholder="Número de Telefone"
-                    />
-                  </div>
+            <p className="text-gray-400">Adicione um número de telefone:</p>
+            <div className="space-x-4 flex flex-row items-center">
+              <div className="flex flex-row space-x-4">
+                <div className="flex flex-col justify-center items-start">
+                  <input
+                    maxLength={2}
+                    type="text"
+                    value={areaCode}
+                    onChange={(e) => setAreaCode(e.target.value)}
+                    className="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                    placeholder="DDD"
+                    name="DDD"
+                  />
                 </div>
-              </>
-            ) : null}
+              </div>
+              <div className="flex space-y-1 flex-col justify-center items-start">
+                <input
+                  name="phone"
+                  maxLength={9}
+                  type="text"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                  placeholder="Número de Telefone"
+                />
+              </div>
+            </div>
 
-            {!userData || !userData.pin ? (
-              <>
-                <p className="text-gray-400">Adicione um PIN à sua conta:</p>
-                <div className="flex space-x-2">
-                  {pin.map((digit, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      maxLength="1"
-                      value={digit}
-                      onChange={(e) => handlePinChange(e.target.value, index)}
-                      className="shadow appearance-none border rounded h-[42px] w-10 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 text-center"
-                    />
-                  ))}
-                </div>
-              </>
-            ) : null}
+            <p className="text-gray-400">Adicione um PIN à sua conta:</p>
+            <div className="flex space-x-2">
+              {pin.map((digit, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  maxLength="1"
+                  value={digit}
+                  onChange={(e) => handlePinChange(e.target.value, index)}
+                  className="shadow appearance-none border rounded h-[42px] w-10 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 text-center"
+                />
+              ))}
+            </div>
 
             <button
               onClick={handleRegisterInfo}
