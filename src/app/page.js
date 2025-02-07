@@ -6,6 +6,7 @@ import PinLogin from "../components/PinLogin";
 import { useEffect, useState } from "react";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import Image from "next/image";
 
 export default function Home() {
   const [user, loading, error] = useAuthState(auth);
@@ -17,7 +18,9 @@ export default function Home() {
     checkAuthStatus((user) => {
       if (user) {
         console.log("User already logged in:", user);
-        router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
+        router.push(
+          `/dashboard?uid=${user.uid}&displayName=${user.displayName}`
+        );
       } else {
         console.log("No user found.");
         setIsCheckingRedirect(false);
@@ -42,7 +45,9 @@ export default function Home() {
       router.push(`/dashboard?uid=${user.uid}&displayName=${user.displayName}`);
     } catch (err) {
       console.error("Erro ao fazer login com o Google:", err);
-      setLoginError("Erro ao fazer login com o Google. Por favor, tente novamente.");
+      setLoginError(
+        "Erro ao fazer login com o Google. Por favor, tente novamente."
+      );
     }
   };
 
@@ -52,19 +57,20 @@ export default function Home() {
 
   return (
     <div className="text-sm sm:text-base w-full flex flex-col items-center justify-center min-h-screen">
-      <div className="bg-gray-800 text-main-aro shadow-lg rounded-2xl p-8">
+      <div className="bg-gradient-to-r from-black to-gray-800 text-main-aro shadow-lg rounded-2xl p-8">
         {loading ? (
           <p className="text-center text-gray-500">Carregando...</p>
         ) : (
-          <div className="text-center">
-            <h2 className="text-3xl font-bold mb-6">Login</h2>
-            <div className="p-4 rounded-3xl bg-gray-700">
+          <div className="space-y-4 flex flex-col justify-center items-center text-center">
+            teste<Image className="mb-4" src="/logo.png" width={100} height={100} alt="logo" />
+            <div className="p-4 rounded-3xl bg-gradient-to-r from-black to-gray-700">
               <PinLogin /> {/* Incluindo o componente PinLogin */}
             </div>
+            
 
             <div className="flex flex-row justify-center items-center">
               <div className="w-[42%] h-[0.1rem] rounded-full bg-gray-600"></div>
-              <p className="text-center flex-grow my-4">ou</p>
+              <p className="text-center flex-grow">ou</p>
               <div className="w-[42%] h-[0.1rem] rounded-full bg-gray-600"></div>
             </div>
 
@@ -84,7 +90,9 @@ export default function Home() {
           </div>
         )}
         {error && <p className="text-red-500 text-sm mt-4">{error.message}</p>}
-        {loginError && <p className="text-red-500 text-sm mt-4">{loginError}</p>}
+        {loginError && (
+          <p className="text-red-500 text-sm mt-4">{loginError}</p>
+        )}
       </div>
     </div>
   );
