@@ -33,25 +33,28 @@ export default function BdUser({
       return null; // Retorna null se userData não estiver definido
     }
 
-    if (userData.role === "admaster" || userData.role === "adm") {
+    const canView =
+      userData.role === "admaster" ||
+      (userData.role === "adm" && user.role === "user");
+
+    if (canView) {
       return (
-        <div className="bg-gray-800 p-4 break-all w-[400px] rounded-2xl p-2" key={user.id}>
+        <div
+          className="bg-gray-800 p-4 break-all w-[400px] rounded-2xl p-2"
+          key={user.id}
+        >
           <div className="flex space-x-4 justify-between items-center">
             <p>{user.displayName}</p>
             <button onClick={() => toggleUserDetails(user.id)}>
-              {isExpanded ? (
-                <FaChevronDown  />
-              ) : (
-                <FaChevronRight />
-              )}
+              {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
             </button>
           </div>
           {isExpanded && (
             <div className="text-gray-400 text-sm">
-              <p>GoogleUID: {user.GoogleUID}</p>
+              {userData.role === "admaster" && <p>ID: {user.GoogleUID}</p>}
               <p>Telefone: {user.phone}</p>
               <p>Cargo: {user.role}</p>
-              <p>PIN: {user.pin}</p>
+              {userData.role === "admaster" && <p>PIN: {user.pin}</p>}
             </div>
           )}
         </div>
@@ -61,10 +64,15 @@ export default function BdUser({
     }
   };
 
+  // Filtrar os usuários de acordo com a permissão de visualização
+  const filteredUsers = users.filter((user) => {
+    return userData.role === "admaster" || (userData.role === "adm" && user.role === "user");
+  });
+
   // Filtrar o alfabeto para mostrar apenas letras que têm registros
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
   const filteredAlphabet = alphabet.filter((letter) =>
-    users.some((user) => user.displayName.startsWith(letter))
+    filteredUsers.some((user) => user.displayName.startsWith(letter))
   );
 
   return (
@@ -84,12 +92,14 @@ export default function BdUser({
 
           {isSectionExpanded && (
             <>
-              <div className=" grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-2">
                 {filteredAlphabet.map((letter) => (
                   <button
                     key={letter}
                     className={`w-10 h-10 m-1 rounded-full font-bold shadow-md hover:shadow-lg transition duration-200 ease-in-out flex items-center justify-center ${
-                      selectedLetter === letter ? "bg-blue-500 text-white" : "bg-gray-300 hover:bg-blue-400 hover:text-white text-gray-800"
+                      selectedLetter === letter
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-300 hover:bg-blue-400 hover:text-white text-gray-800"
                     }`}
                     onClick={() => handleLetterClick(letter)}
                   >
@@ -99,7 +109,7 @@ export default function BdUser({
               </div>
 
               <div className="p-4 flex space-y-4 flex-col items-center justify-center w-full">
-                {users
+                {filteredUsers
                   .filter((user) => user.displayName.startsWith(selectedLetter))
                   .map((user) => renderUserDetails(user))}
               </div>
