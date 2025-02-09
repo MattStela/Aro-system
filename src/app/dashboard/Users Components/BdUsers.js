@@ -39,6 +39,8 @@ export default function BdUsers({
               {userData.role === "admaster" && <p>ID: {user.GoogleUID}</p>}
               <p>Telefone: {user.phone}</p>
               <p>Cargo: {user.role}</p>
+              <p>registeredBy: {user.registeredBy}</p>
+              <p>tokenLSM: {user.tokenLSM}</p>
               {userData.role === "admaster" && <p>PIN: {user.pin}</p>}
             </div>
           )}

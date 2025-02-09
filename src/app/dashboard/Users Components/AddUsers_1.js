@@ -68,7 +68,7 @@ export default function AddUsers({
   return (
     <div className="p-8 space-y-4 bg-gray-700 rounded-3xl w-full flex flex-col justify-between items-center">
       <div className="flex items-center justify-between w-full">
-        <p className="text-lg font-bold">Cadastre um usuário novo</p>
+        <p className="text-lg font-bold">Cadastrar um novo usuário</p>
         <button onClick={toggleExpand}>
           {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
         </button>

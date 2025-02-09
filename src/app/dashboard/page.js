@@ -36,6 +36,7 @@ function DashboardContent() {
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
         const data = userDoc.data();
+        data.uid = uid; // Definindo o uid no userData
         if (!data.role) {
           // Se não houver registro de role, defina como null
           await setDoc(userRef, { role: null }, { merge: true });
@@ -147,7 +148,6 @@ function DashboardContent() {
         userData={userData}
         events={events} // Passando a coleção "events"
       /></div>
-
   );
 }
 
