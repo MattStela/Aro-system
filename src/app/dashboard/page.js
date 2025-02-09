@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 import HeaderUser from "./HeaderUser";
-import BdRegister from "./BdRegister";
-import Posts from "./Posts";
+import BdUsers from "./BdUsers";
+import Events from "./Events";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -17,11 +17,13 @@ function DashboardContent() {
   const [areaCode, setAreaCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pin, setPin] = useState(new Array(6).fill(""));
-  const [displayName, setDisplayName] = useState(searchParams.get("displayName")); // Initialize with the displayName from search params
+  const [displayName, setDisplayName] = useState(
+    searchParams.get("displayName")
+  ); // Initialize with the displayName from search params
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
   const [users, setUsers] = useState([]); // Estado para armazenar a lista de usuários
-  const [posts, setPosts] = useState([]); // Estado para armazenar a lista de posts
+  const [events, setEvents] = useState([]); // Estado para armazenar a lista de eventos
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -52,27 +54,27 @@ function DashboardContent() {
     const fetchUsers = async () => {
       const usersCollection = collection(db, "users");
       const usersSnapshot = await getDocs(usersCollection);
-      const usersList = usersSnapshot.docs.map(doc => ({
+      const usersList = usersSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setUsers(usersList);
     };
 
-    const fetchPosts = async () => {
-      const postsCollection = collection(db, "posts");
-      const postsSnapshot = await getDocs(postsCollection);
-      const postsList = postsSnapshot.docs.map(doc => ({
+    const fetchEvents = async () => {
+      const eventsCollection = collection(db, "events");
+      const eventsSnapshot = await getDocs(eventsCollection);
+      const eventsList = eventsSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setPosts(postsList);
+      setEvents(eventsList);
     };
 
     fetchUserData();
     fetchToken();
     fetchUsers(); // Buscar a lista de usuários
-    fetchPosts(); // Buscar a lista de posts
+    fetchEvents(); // Buscar a lista de eventos
   }, [uid]);
 
   const handleSignOut = async () => {
@@ -137,7 +139,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="p-4 text-sm sm:text-base w-full flex flex-col space-y-4 items-center justify-center min-h-screen bg-gray-800 text-white relative">
+    <div className="p-4 text-sm sm:text-base w-full flex flex-col space-y-4 items-center justify-start min-h-screen bg-gray-800 text-white relative">
       {/* Cabeçalho do usuário ================================================================== */}
       <HeaderUser
         displayName={displayName}
@@ -153,26 +155,13 @@ function DashboardContent() {
         handlePinChange={handlePinChange}
         setDisplayName={setDisplayName}
       />
-      
-      <BdRegister
-        userData={userData}
-        users={users}
-      />
 
-      <Posts  
+      <BdUsers userData={userData} users={users} />
+
+      <Events
         displayName={displayName}
-        token={token}
-        handleSignOut={handleSignOut}
         userData={userData}
-        handleRegisterInfo={handleRegisterInfo}
-        areaCode={areaCode}
-        setAreaCode={setAreaCode}
-        phoneNumber={phoneNumber}
-        setPhoneNumber={setPhoneNumber}
-        pin={pin}
-        handlePinChange={handlePinChange}
-        setDisplayName={setDisplayName}
-        posts={posts} // Passando a coleção "posts"
+        events={events} // Passando a coleção "events"
       />
     </div>
   );
