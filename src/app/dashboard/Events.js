@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { db } from "../../../firebase"; // Certifique-se de que o caminho para seu arquivo firebase.js esteja correto
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 
-import AddEvent from "./AddEvents";
-import BdEvents from "./BdEvents";
+import AddEvent from "./Events Components/AddEvents";
+import BdEvents from "./Events Components/BdEvents";
 
 export default function Events({
   events,

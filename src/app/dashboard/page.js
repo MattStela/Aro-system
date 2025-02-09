@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 import HeaderUser from "./HeaderUser";
-import BdUsers from "./BdUsers";
+import Users from "./Users";
 import Events from "./Events";
 
 function DashboardContent() {
@@ -24,6 +24,7 @@ function DashboardContent() {
   const [token, setToken] = useState(null);
   const [users, setUsers] = useState([]); // Estado para armazenar a lista de usuários
   const [events, setEvents] = useState([]); // Estado para armazenar a lista de eventos
+  const [tokenLSM, setTokenLSM] = useState("");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -35,17 +36,47 @@ function DashboardContent() {
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
         const data = userDoc.data();
+        if (!data.role) {
+          // Se não houver registro de role, defina como null
+          await setDoc(userRef, { role: null }, { merge: true });
+          data.role = null;
+        }
         setUserData(data);
         setDisplayName(data.displayName || displayName); // Update the displayName if it exists in user data
       }
       setIsLoading(false);
     };
 
-    const fetchToken = () => {
+    const fetchToken = async () => {
       const jwtToken = localStorage.getItem("jwtToken");
       setToken(jwtToken);
       if (jwtToken) {
         console.log("Usuário autenticado: sim");
+        const getTokenLSM = (token) => {
+          const parts = token.split(".");
+          const signature = parts.length === 3 ? parts[2] : "";
+          const extractedPart = signature.substring(7, 15); // Extrai 8 caracteres a partir do oitavo
+          return (
+            extractedPart.substring(0, 4) + "-" + extractedPart.substring(4)
+          ); // Adiciona um hífen após os primeiros quatro caracteres
+        };
+        const tokenLSMValue = getTokenLSM(jwtToken);
+        setTokenLSM(tokenLSMValue);
+        // Registrar o tokenLSM no banco de dados se o role for null ou não houver role
+        const userRef = doc(db, "users", uid);
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.role === null || !data.role) {
+            if (!data.tokenLSM) {
+              await setDoc(
+                userRef,
+                { tokenLSM: tokenLSMValue },
+                { merge: true }
+              );
+            }
+          }
+        }
       } else {
         console.log("Usuário autenticado: não");
       }
@@ -82,88 +113,41 @@ function DashboardContent() {
     router.push("/");
   };
 
-  const handlePinChange = (value, index) => {
-    const newPin = [...pin];
-    newPin[index] = value;
-    setPin(newPin);
-  };
-
-  const handleRegisterInfo = async () => {
-    const userRef = doc(db, "users", uid);
-    const dataToUpdate = {
-      phone: `+55${areaCode}${phoneNumber}`,
-      pin: pin.join(""),
-      displayName: displayName, // Salva o novo displayName
-      role: userData?.role || "user", // Define a role como "user" se não estiver definida
-    };
-
-    try {
-      console.log("Iniciando a requisição para updateUserData");
-      console.log("Dados a serem enviados:", { uid, data: dataToUpdate });
-
-      const response = await fetch("/api/updateUserData", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ uid, data: dataToUpdate }),
-      });
-
-      const result = await response.json();
-      console.log("Resposta do servidor:", result);
-
-      if (response.ok) {
-        const userDoc = await getDoc(userRef);
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setUserData(data);
-          setDisplayName(data.displayName); // Update the displayName in the state
-        }
-
-        alert("Informações registradas com sucesso!");
-      } else {
-        console.error("Erro ao registrar as informações:", result.message);
-        alert(`Erro ao registrar as informações: ${result.message}`);
-      }
-    } catch (error) {
-      console.error("Erro ao registrar as informações: ", error);
-      alert(
-        "Erro ao registrar as informações. Verifique suas permissões no Firestore."
-      );
-    }
-  };
-
   if (isLoading) {
     return <div>Carregando...</div>;
   }
 
+  if (userData?.role === null) {
+    return (
+      <div className="p-4 text-sm sm:text-base w-full flex flex-col space-y-4 items-center justify-start min-h-screen bg-gray-800 text-white relative">
+        <HeaderUser
+          displayName={displayName}
+          tokenLSM={tokenLSM}
+          handleSignOut={handleSignOut}
+          userData={userData}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 text-sm sm:text-base w-full flex flex-col space-y-4 items-center justify-start min-h-screen bg-gray-800 text-white relative">
-      {/* Cabeçalho do usuário ================================================================== */}
+      
       <HeaderUser
         displayName={displayName}
-        token={token}
+        tokenLSM={tokenLSM}
         handleSignOut={handleSignOut}
         userData={userData}
-        handleRegisterInfo={handleRegisterInfo}
-        areaCode={areaCode}
-        setAreaCode={setAreaCode}
-        phoneNumber={phoneNumber}
-        setPhoneNumber={setPhoneNumber}
-        pin={pin}
-        handlePinChange={handlePinChange}
-        setDisplayName={setDisplayName}
       />
 
-      <BdUsers userData={userData} users={users} />
+      <Users userData={userData} users={users} />
 
       <Events
         displayName={displayName}
         userData={userData}
         events={events} // Passando a coleção "events"
-      />
-    </div>
+      /></div>
+
   );
 }
 

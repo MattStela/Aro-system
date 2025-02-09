@@ -1,31 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 
-export default function BdUser({
+export default function BdUsers({
   userData, // dados do banco de dados do firebase
   users,
+  toggleUserDetails,
+  handleLetterClick,
+  toggleSection,
+  expandedUserIds,
+  selectedLetter,
+  isSectionExpanded,
 }) {
-  const [expandedUserIds, setExpandedUserIds] = useState([]);
-  const [selectedLetter, setSelectedLetter] = useState(null);
-  const [isSectionExpanded, setIsSectionExpanded] = useState(false); // Alterado para false por padrão
-
-  const toggleUserDetails = (userId) => {
-    setExpandedUserIds((prevState) =>
-      prevState.includes(userId)
-        ? prevState.filter((id) => id !== userId)
-        : [...prevState, userId]
-    );
-  };
-
-  const handleLetterClick = (letter) => {
-    setSelectedLetter(letter);
-    setExpandedUserIds([]); // Close any expanded user details when a new letter is selected
-  };
-
-  const toggleSection = () => {
-    setIsSectionExpanded((prevState) => !prevState);
-  };
-
   const renderUserDetails = (user) => {
     const isExpanded = expandedUserIds.includes(user.id);
 
@@ -66,7 +51,10 @@ export default function BdUser({
 
   // Filtrar os usuários de acordo com a permissão de visualização
   const filteredUsers = users.filter((user) => {
-    return userData.role === "admaster" || (userData.role === "adm" && user.role === "user");
+    return (
+      userData.role === "admaster" ||
+      (userData.role === "adm" && user.role === "user")
+    );
   });
 
   // Filtrar o alfabeto para mostrar apenas letras que têm registros

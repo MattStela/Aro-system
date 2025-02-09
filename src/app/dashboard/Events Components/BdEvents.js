@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { db } from "../../../firebase"; // Certifique-se de que o caminho para seu arquivo firebase.js esteja correto
+import { db } from "../../../../firebase"; // Certifique-se de que o caminho para seu arquivo firebase.js esteja correto
 import { doc, updateDoc } from "firebase/firestore";
 import { FaChevronDown, FaChevronRight, FaEdit } from "react-icons/fa";
 

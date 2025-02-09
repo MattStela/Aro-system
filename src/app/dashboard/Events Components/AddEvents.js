@@ -24,6 +24,11 @@ export default function AddEvent({
     setIsExpanded((prevState) => !prevState);
   };
 
+  // Verificação para usuários com role "user"
+  if (userData.role === "user") {
+    return "";
+  }
+
   return (
     <div className="bg-gray-700 rounded-3xl w-full flex flex-col p-8 justify-center items-center">
       <div className="w-full flex justify-between items-center">
